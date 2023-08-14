@@ -23,7 +23,32 @@ print(paddle.vision.get_image_backend())
 # 打印数据集里图片数量：60000 images in train_dataset, 10000 images in test_dataset
 print('{} images in train_dataset, {} images in test_dataset'.format(len(train_dataset), len(test_dataset)))
 
-# 模型组网并初始化网络，由于做的是0~9的数字识别，所以num_classes=10分类任务
+# 模型组网并初始化网络
+# 使用paddle提供的LeNet，由于做的是0~9的数字识别，所以num_classes=10分类任务，默认10
 lenet = paddle.vision.models.LeNet(num_classes=10)
 # 可视化模型组网结构和参数
-paddle.summary(lenet, (1, 1, 28, 28))
+paddle.summary(net=lenet, input_size=(1, 1, 28, 28))
+
+# 封装模型，便于进行后续的训练、评估和推理
+# Model相关方法文档： https://www.paddlepaddle.org.cn/documentation/docs/zh/api/paddle/Model_cn.html
+model = paddle.Model(lenet)
+
+# 模型训练的配置准备，准备损失函数，优化器和评价指标
+model.prepare(optimizer=paddle.optimizer.Adam(parameters=model.parameters()),  # 优化器
+              loss=paddle.nn.CrossEntropyLoss(),  # 损失函数
+              metrics=paddle.metric.Accuracy()  # 评价指标
+              )
+
+# 开始训练
+
+# epochs (int，可选) - 训练的轮数。默认值：1。
+# batch_size (int，可选) - 训练数据或评估数据的批大小，当 train_data 或 eval_data 为 DataLoader 的实例时，该参数会被忽略。默认值：1。
+# verbose (int，可选) - 可视化的模型，必须为 0，1，2。当设定为 0 时，不打印日志，设定为 1 时，使用进度条的方式打印日志，设定为 2 时，一行一行地打印日志。默认值：2。
+model.fit(train_data=train_dataset, epochs=5, batch_size=64, verbose=1)
+
+# 进行模型评估
+model.evaluate(eval_data=test_dataset, batch_size=64, verbose=1)
+
+# 保存模型，文件夹会自动创建
+# 代码执行后会在output目录下保存两个文件，mnist.pdopt为优化器的参数，mnist.pdparams为模型的参数。
+model.save('./output/mnist')
