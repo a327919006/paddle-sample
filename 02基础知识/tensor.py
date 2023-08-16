@@ -51,8 +51,34 @@ print(paddle.randint(0, 10, [2, 3]))
 import numpy as np
 from PIL import Image
 
-fake_img = Image.fromarray((np.random.rand(224, 224, 3) * 255.).astype(np.uint8)) # 创建随机图片
+fake_img = Image.fromarray((np.random.rand(224, 224, 3) * 255.).astype(np.uint8))  # 创建随机图片
 transform = paddle.vision.transforms.ToTensor()
-tensor = transform(fake_img) # 使用 ToTensor()将图片转换为 Tensor
+tensor = transform(fake_img)  # 使用 ToTensor()将图片转换为 Tensor
 print(tensor)
 
+# 2.5 自动创建 Tensor
+from paddle.vision.transforms import Compose, Normalize
+
+# Compose：将用于数据集预处理的接口以列表的方式进行组合
+transform = Compose([Normalize(mean=[127.5],
+                               std=[127.5],
+                               data_format='CHW')])
+
+test_dataset = paddle.vision.datasets.MNIST(mode='test', transform=transform)
+print(test_dataset[0][1])  # 打印原始数据集的第一个数据的 label
+loader = paddle.io.DataLoader(test_dataset)
+for data in enumerate(loader):
+    x, label = data[1]
+    print(label)  # 打印由 DataLoader 返回的迭代器中的第一个数据的 label
+    break
+
+# 3.1 Tensor 的形状（shape）
+ndim_4_Tensor = paddle.ones([2, 3, 4, 5])
+# shape：描述了 Tensor 每个维度上元素的数量
+print(ndim_4_Tensor.shape, ndim_4_Tensor.dtype, ndim_4_Tensor.place)
+# ndim： Tensor 的维度数量，例如向量的维度为 1，矩阵的维度为 2，Tensor 可以有任意数量的维度。
+print(ndim_4_Tensor.ndim)
+# axis 或者 dimension：Tensor 的轴，即某个特定的维度。
+print(ndim_4_Tensor[0][1])
+# size：Tensor 中全部元素的个数。
+print(ndim_4_Tensor.size)
