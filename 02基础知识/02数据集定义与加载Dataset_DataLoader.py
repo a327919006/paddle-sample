@@ -25,6 +25,7 @@ print('自然语言处理（NLP）相关数据集：', paddle.text.__all__)
 # #     break
 
 # 1.2 使用 paddle.io.Dataset 自定义数据集
+# 下载数据集：https://paddle-imagenet-models-name.bj.bcebos.com/data/mnist.tar
 # 可构建一个子类继承自 paddle.io.Dataset ，并且实现下面的三个函数：
 # __init__：完成数据集初始化操作，将磁盘中的样本文件路径和对应标签映射到一个列表中。
 # __getitem__：定义指定索引（index）时如何获取样本数据，最终返回对应 index 的单条数据（样本数据、对应的标签）。
@@ -93,6 +94,11 @@ print('train_custom_dataset images: ', len(train_custom_dataset), 'test_custom_d
 # 通过前面介绍的直接迭代读取 Dataset 的方式虽然可实现对数据集的访问，
 # 但是这种访问方式只能单线程进行并且还需要手动分批次（batch）。
 # 在飞桨框架中，推荐使用 paddle.io.DataLoader API 对数据集进行多进程的读取，并且可自动完成划分 batch 的工作。
+
+# batch_size：每批次读取样本数，示例中 batch_size=64 表示每批次读取 64 个样本。
+# shuffle：样本乱序，shuffle=True 表示在取数据时打乱样本顺序，以减少过拟合发生的可能。
+# drop_last：丢弃不完整的批次样本，drop_last=True 表示丢弃因数据集样本数不能被 batch_size 整除而产生的最后一个不完整的 batch 样本。
+# num_workers：同步/异步读取数据，通过 num_workers 来设置加载数据的子进程个数，num_workers的值设为大于0时，即开启多进程方式异步加载数据，可提升数据读取速度。
 train_loader = paddle.io.DataLoader(train_custom_dataset, batch_size=64, shuffle=True, num_workers=1, drop_last=True)
 # 调用 DataLoader 迭代读取数据
 for batch_id, data in enumerate(train_loader()):
