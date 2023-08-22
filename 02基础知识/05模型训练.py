@@ -42,11 +42,15 @@ model.prepare(optimizer=paddle.optimizer.Adam(learning_rate=0.001, parameters=mo
 # 训练数据集：传入之前定义好的训练数据集。
 # 训练轮次（epoch）：训练时遍历数据集的次数，即外循环轮次。
 # 批次大小（batch_size）：内循环中每个批次的训练样本数。
-model.fit(train_data=train_dataset, batch_size=64, epochs=5, verbose=1)
+#方式一：设置训练过程中保存模型，save_freq可以设置保存动态图模型的频率，即多少个 epoch 保存一次模型，默认值是 1。
+model.load('output/mnist')
+model.fit(train_data=train_dataset, batch_size=64, epochs=2, verbose=1)
+#方式二：设置训练后保存模型
+model.save('output/mnist')  # save for training
 
 # 2.4 使用 Model.evaluate 评估模型
-eval_result = model.evaluate(test_dataset, verbose=1)
-print(eval_result)
+# eval_result = model.evaluate(test_dataset, verbose=1)
+# print(eval_result)
 
 # 2.5 使用 Model.predict 执行推理
 img, label = test_dataset[0]
@@ -64,3 +68,59 @@ plt.show()
 
 # 三、使用基础 API 训练、评估与推理
 # 3.1 模型训练（拆解 Model.prepare、Model.fit）
+# dataset与mnist的定义与使用高层API的内容一致
+# 用 DataLoader 实现数据加载
+# train_loader = paddle.io.DataLoader(train_dataset, batch_size=64, shuffle=True)
+# # 将mnist模型及其所有子层设置为训练模式。这只会影响某些模块，如Dropout和BatchNorm。
+# mnist.train()
+# # 设置迭代次数
+# epochs = 1
+# # 设置优化器
+# optim = paddle.optimizer.Adam(parameters=mnist.parameters())
+# # 设置损失函数
+# loss_fn = paddle.nn.CrossEntropyLoss()
+# for epoch in range(epochs):
+#     for batch_id, data in enumerate(train_loader()):
+#
+#         x_data = data[0]  # 训练数据
+#         y_data = data[1]  # 训练数据标签
+#         predicts = mnist(x_data)  # 预测结果
+#
+#         # 计算损失 等价于 prepare 中loss的设置
+#         loss = loss_fn(predicts, y_data)
+#
+#         # 计算准确率 等价于 prepare 中metrics的设置
+#         acc = paddle.metric.accuracy(predicts, y_data)
+#
+#         # 下面的反向传播、打印训练信息、更新参数、梯度清零都被封装到 Model.fit() 中
+#         # 反向传播
+#         loss.backward()
+#
+#         if (batch_id + 1) % 900 == 0:
+#             print("epoch: {}, batch_id: {}, loss is: {}, acc is: {}".format(epoch, batch_id + 1, loss.numpy(),
+#                                                                             acc.numpy()))
+#         # 更新参数
+#         optim.step()
+#         # 梯度清零
+#         optim.clear_grad()
+#
+# # 加载测试数据集
+# test_loader = paddle.io.DataLoader(test_dataset, batch_size=64, drop_last=True)
+# # 设置损失函数
+# loss_fn = paddle.nn.CrossEntropyLoss()
+# # 将该模型及其所有子层设置为预测模式。这只会影响某些模块，如Dropout和BatchNorm
+# mnist.eval()
+# # 禁用动态图梯度计算
+# for batch_id, data in enumerate(test_loader()):
+#
+#     x_data = data[0]            # 测试数据
+#     y_data = data[1]            # 测试数据标签
+#     predicts = mnist(x_data)    # 预测结果
+#
+#     # 计算损失与精度
+#     loss = loss_fn(predicts, y_data)
+#     acc = paddle.metric.accuracy(predicts, y_data)
+#
+#     # 打印信息
+#     if (batch_id+1) % 30 == 0:
+#         print("batch_id: {}, loss is: {}, acc is: {}".format(batch_id+1, loss.numpy(), acc.numpy()))
