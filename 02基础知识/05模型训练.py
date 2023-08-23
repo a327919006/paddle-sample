@@ -46,7 +46,8 @@ model.prepare(optimizer=paddle.optimizer.Adam(learning_rate=0.001, parameters=mo
 model.load('output/mnist')
 model.fit(train_data=train_dataset, batch_size=64, epochs=2, verbose=1)
 #方式二：设置训练后保存模型
-model.save('output/mnist')  # save for training
+# training=False时表示静态模型用于预测
+model.save('output/mnisttest', training=True)  # save for training
 
 # 2.4 使用 Model.evaluate 评估模型
 # eval_result = model.evaluate(test_dataset, verbose=1)
