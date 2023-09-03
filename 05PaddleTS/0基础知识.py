@@ -1,12 +1,13 @@
 # coding=utf-8
 __author__ = 'hasee'
-import paddlets
-from paddlets.datasets.repository import get_dataset, dataset_list
-from paddlets import TSDataset
-from matplotlib import pyplot as plt
-import pandas as pd
-import numpy as np
 import warnings
+
+import numpy as np
+import paddlets
+import pandas as pd
+from matplotlib import pyplot as plt
+from paddlets import TSDataset
+from paddlets.datasets.repository import get_dataset, dataset_list
 
 warnings.filterwarnings("ignore")
 
@@ -72,6 +73,70 @@ subset_test_pred_dataset.plot()
 plt.show()
 subset_test_dataset, _ = test_dataset.split(len(subset_test_pred_dataset.target))
 subset_test_dataset.plot(add_data=subset_test_pred_dataset, labels=['Pred'])
+plt.show()
 subset_test_pred_dataset = mlp.recursive_predict(val_dataset, 24 * 4)
 subset_test_dataset, _ = test_dataset.split(len(subset_test_pred_dataset.target))
 subset_test_dataset.plot(add_data=subset_test_pred_dataset, labels=['Pred'])
+plt.show()
+
+# 5. 评估和回测
+from paddlets.metrics import MAE
+
+mae = MAE()
+mae(subset_test_dataset, subset_test_pred_dataset)
+# {'WetBulbCelsius': 0.6734366664042076}
+from paddlets.utils import backtest
+
+metrics_score = backtest(
+    data=val_test_dataset,
+    model=mlp,
+    start=0.5,
+    predict_window=24,
+    stride=24,
+    metric=mae
+)
+print(f"mae: {metrics_score}")
+# mae: 1.3767653357878213
+
+# 6. 协变量
+
+from paddlets.transform import TimeFeatureGenerator
+
+time_feature_generator = TimeFeatureGenerator(feature_cols=['dayofyear', 'weekofyear', 'is_workday'])
+dataset_gen_target_cov = time_feature_generator.fit_transform(dataset)
+print(dataset_gen_target_cov)
+print(dataset_gen_target_cov.known_cov)
+# 6.1. 自动构建日期相关协变量
+# 使用 paddlets.transform 中的 TimeFeatureGenerator 去自动生成日期与时间相关的协变量。如是否节假日，
+# 当前是每年的第几周等信息，因为这些信息在预测未来数据的时候也是已知的，因此其属于 known_covariate(已知协变量)。
+# 在以下示例中，我们会生成三个时间相关的协变量，分别代表 一年中的第几天 、一周中的第几天、 是否是工作日 。
+from paddlets.transform import TimeFeatureGenerator
+
+time_feature_generator = TimeFeatureGenerator(feature_cols=['dayofyear', 'weekofyear', 'is_workday'])
+dataset_gen_target_cov = time_feature_generator.fit_transform(dataset)
+print(dataset_gen_target_cov)
+print(dataset_gen_target_cov.known_cov)
+
+# 6.2. 自定义协变量
+import pandas as pd
+from paddlets import TSDataset
+
+df = pd.DataFrame(
+    {
+        'time_col': pd.date_range(
+            dataset.target.time_index[0],
+            periods=len(dataset.target),
+            freq=dataset.freq
+        ),
+        'cov1': [i for i in range(len(dataset.target))]
+    }
+)
+dataset_cus_cov = TSDataset.load_from_dataframe(
+    df,
+    time_col='time_col',
+    known_cov_cols='cov1',
+    freq=dataset.freq
+)
+print(dataset_cus_cov)
+dataset_cus_target_cov = TSDataset.concat([dataset, dataset_cus_cov])
+print(dataset_cus_target_cov)
