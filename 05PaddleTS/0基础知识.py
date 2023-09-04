@@ -16,7 +16,9 @@ warnings.filterwarnings("ignore")
 print(paddlets.__version__)
 
 # 2. 构建TSDataset
-# 2.1. 内置TSDataset数据集
+# 2.1. 内置TSDataset数据集
+# datasets: ['UNI_WTH', 'ETTh1', 'ETTm1', 'ECL', 'WTH', 'NAB_TEMP', 'psm_train', 'psm_test',
+# 'BasicMotions_Train', 'BasicMotions_Test']
 print(f"built-in datasets: {dataset_list()}")
 
 dataset = get_dataset('UNI_WTH')
