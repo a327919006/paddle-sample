@@ -24,7 +24,7 @@ plot_anoms(origin_data=ts_data, feature_name='value')
 plt.show()
 
 # 3. 数据处理
-# set seed
+# 设置全局默认 generator 的随机种子。
 seed = 2022
 paddle.seed(seed)
 np.random.seed(seed)
