@@ -11,7 +11,7 @@ from matplotlib import pyplot as plt
 import warnings
 
 # 异常数据预览
-df_daily_jumpsup_path = './artificialWithAnomaly/art_daily_jumpsup.csv'
+df_daily_jumpsup_path = './data_nab/data_error.csv'
 df_daily_jumpsup = pd.read_csv(
     df_daily_jumpsup_path, parse_dates=True, index_col="timestamp"
 )
@@ -72,11 +72,13 @@ def create_sequences(values, time_steps=288):
 
 
 x_test = create_sequences(df_test_value.values)
+print(x_test)
+print(x_test.shape)
 x = paddle.to_tensor(x_test).astype('float32')
-
 abnormal_index = []  # 记录检测到异常时数据的索引
 
-for i in range(len(x_test)):
+indexs = range(len(x_test))
+for i in indexs:
     input_x = paddle.reshape(x[i], (1, 1, 288))
     out = model(input_x)
     loss = mse_loss(input_x[:, :, :-1], out)
@@ -85,7 +87,7 @@ for i in range(len(x_test)):
         abnormal_index.append(i + 288)
 
 # 不再检测异常时序列的前端靠近异常点，所以要减去索引长度得到异常点真实索引，为了结果明显，给异常位置加宽40单位
-abnormal_index = abnormal_index[:(-288 + 40)]
+abnormal_index = abnormal_index[:(-288)]
 print(len(abnormal_index))
 print(abnormal_index)
 # 异常检测结果可视化

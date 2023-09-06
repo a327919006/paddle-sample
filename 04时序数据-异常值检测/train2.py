@@ -12,7 +12,7 @@ import warnings
 
 warnings.filterwarnings("ignore")
 # 正常数据预览
-df_small_noise_path = './artificialNoAnomaly/art_daily_small_noise.csv'
+df_small_noise_path = './data_nab/data_normal.csv'
 df_small_noise = pd.read_csv(
     df_small_noise_path, parse_dates=True, index_col="timestamp"
 )

@@ -71,7 +71,7 @@ class AutoEncoder(paddle.nn.Layer):
         return x
 
 
-df_daily_jumpsup_path = './artificialWithAnomaly/art_daily_jumpsup.csv'
+df_daily_jumpsup_path = './data_nab/data_error.csv'
 df_daily_jumpsup = pd.read_csv(
     df_daily_jumpsup_path, parse_dates=True, index_col="timestamp"
 )
