@@ -10,23 +10,12 @@ import numpy as np
 from paddlets.transform import StandardScaler
 from paddlets.models.anomaly import AutoEncoder
 from paddlets.metrics import F1, ACC, Precision, Recall
+from paddlets.models.model_loader import load
 import warnings
 
 warnings.filterwarnings("ignore")
 
 # 1. 数据准备
-train_df = pandas.read_csv("data_temp/data_normal.csv")
-print(train_df)
-train_tsdata = TSDataset.load_from_dataframe(
-    train_df,  # Also can be path to the CSV file
-    time_col='timestamp',
-    label_col='label',
-    feature_cols=['value'],
-    freq='5T'
-)
-plot_anoms(origin_data=train_tsdata, feature_name='value')
-plt.show()
-
 test_df = pandas.read_csv("data_temp/data_error.csv")
 print(test_df)
 test_tsdata = TSDataset.load_from_dataframe(
@@ -42,16 +31,11 @@ plt.show()
 # 3. 数据处理
 # standardize
 scaler = StandardScaler('value')
-scaler.fit(train_tsdata)
-train_tsdata_scaled = scaler.transform(train_tsdata)
+scaler.fit(test_tsdata)
 test_tsdata_scaled = scaler.transform(test_tsdata)
 
-# 4. 模型训练
-model = AutoEncoder(in_chunk_len=2, max_epochs=100)
-model.fit(train_tsdata_scaled)
-
-
 # 5. 模型预测和评估
+model = load('./model_temp/ae')
 pred_label = model.predict(test_tsdata_scaled)
 lable_name = pred_label.target.data.columns[0]
 f1 = F1()(test_tsdata, pred_label)
@@ -69,11 +53,7 @@ plot_anoms(origin_data=test_tsdata, predict_data=pred_score, feature_name="value
 plt.show()
 
 # 7. 模型持久化
-model.save('./model_temp/ae')
-from paddlets.models.model_loader import load
-
-loaded_model = load('./model_temp/ae')
-pred_label = loaded_model.predict(test_tsdata_scaled)
-pred_score = loaded_model.predict_score(test_tsdata_scaled)
+pred_label = model.predict(test_tsdata_scaled)
+pred_score = model.predict_score(test_tsdata_scaled)
 print('pred_label=', pred_label)
 print('pred_score=', pred_score)
