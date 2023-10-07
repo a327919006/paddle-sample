@@ -51,7 +51,7 @@ train_tsdata_scaled = scaler.transform(train_tsdata)
 test_tsdata_scaled = scaler.transform(test_tsdata)
 
 # 4. 模型训练
-model = AutoEncoder(in_chunk_len=2, max_epochs=10)
+model = AutoEncoder(in_chunk_len=2, max_epochs=20)
 model.fit(train_tsdata_scaled)
 
 # 5. 模型预测和评估
